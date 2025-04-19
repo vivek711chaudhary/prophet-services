@@ -1,0 +1,16 @@
+runtime: custom
+env: flex
+service: prophet-service
+
+env_variables:
+  MONGODB_URI: mongodb+srv://vivekchaudhary52637:23mRD7YosUzFEXtt@engagements.magosmu.mongodb.net/
+  MODEL_CACHE_DIR: "cache"
+  DEBUG: "False"
+
+manual_scaling:
+  instances: 1
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10 

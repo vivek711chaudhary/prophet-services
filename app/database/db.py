@@ -17,7 +17,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger("prophet_db")
+logger = logging.getLogger("mcp2")
 
 class Database:
     def __init__(self):
@@ -27,11 +27,11 @@ class Database:
             self.client = MongoClient(settings.MONGODB_URI)
             
             # Explicitly use the existing database
-            self.db = self.client.prophet_db  # Use existing database
+            self.db = self.client.mcp2  # Use existing database
             self.engagements = self.db.engagements  # Use existing collection
             
             # Log database and collection names
-            logger.info(f"Using database: prophet_db and collection: engagements")
+            logger.info(f"Using database: mcp2 and collection: engagements")
             
             # Test the connection
             self.client.admin.command('ping')
@@ -48,12 +48,23 @@ class Database:
         try:
             logger.info(f"Storing engagement data for topic: {data.get('topic')}, platform: {data.get('platform')}")
             
+            # Convert float values to proper numeric types
+            if 'value' in data:
+                # Ensure value is never exactly zero for platforms with actual data
+                platform = data.get('platform', '')
+                if data['value'] == 0 and platform in ['news', 'twitter', 'reddit'] and data.get('metadata', {}).get('result_count', 0) > 0:
+                    logger.warning(f"Detected zero value for platform {platform} with data. Setting minimum value.")
+                    data['value'] = 0.1
+            
             # Ensure timestamp is a datetime object
             if isinstance(data.get('timestamp'), str):
                 data['timestamp'] = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
             
             # Add created_at field
             data['created_at'] = datetime.utcnow()
+            
+            # Log the entire data object for debugging
+            logger.info(f"Full data being stored: {str(data)}")
             
             # Insert into MongoDB
             result = self.engagements.insert_one(data)

@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.git/
+.gitignore
+*.log
+venv/
+.coverage
+htmlcov/
+.pytest_cache/
+.idea/
+.vscode/
+prophet_service.log 
